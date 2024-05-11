@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Your Orders
+{% endblock title %} 
+
+{% block content %}
+<h1>Welcome to Dhamaka Sale</h1>
+{% endblock content %}
+
+{% block body %}
+{% load static %}
+
+<!-- ======= Portfolio Section ======= -->
+<section id="portfolio" class="portfolio">
+  <div class="container">
+    {% for message in messages %}
+    <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
+      <strong>{{message}}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+
+    <div class="section-title">
+      <h2>Welcome to Shop</h2>
+      <h3>Your Orders</h3>
+    </div>
+
+    <div class="container">
+      <div class="col my-4">
+        <h5>Order will be delivered within 2 to 3 working days</h5>
+        <div class="my-4">
+          <ul class="list-group" id="items">
+            {% for order in orders %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <p>Order ID: {{ order.order_id }}</p>
+              <p>Item Name: {{ order.item_name }}</p>
+              <div><b>Amount: {{ order.amount }}</b></div>
+              <div><b>Name: {{ order.name }}</b></div>
+
+              {% if order.order_date %}
+                <div><b>Order Date: {{ order.order_date }}</b></div>
+              {% else %}
+                <div>Order Date: No updates yet</div>
+              {% endif %}
+
+              {% if order.can_cancel %}
+              <form method="post" action="{% url 'orders' %}">
+                {% csrf_token %}
+                <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                <input type="hidden" name="action" value="cancel">
+                <button type="submit" class="btn btn-danger btn-sm">Cancel Order</button>
+              </form>
+              {% endif %}
+
+              {% if order.status == 'Return' %}
+                <button type="button" class="btn btn-primary btn-sm returning-button" disabled>Returning</button>
+              {% else %}
+                <form method="post" action="{% url 'orders' %}" class="return-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="order_id" value="{{ order.order_id }}">
+                  <input type="hidden" name="action" value="return">
+                  <button type="submit" class="btn btn-primary btn-sm return-button">Return Order</button>
+                </form>
+              {% endif %}
+            </li>
+            {% empty %}
+            <li class="list-group-item">No orders found.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+<script>
+  $(document).ready(function() {
+    $('.return-form').submit(function(event) {
+      event.preventDefault();  // Prevent the form submission
+      var form = $(this);
+      var button = form.find('.return-button');
+      button.attr('disabled', 'disabled');
+      button.text('Returning');
+
+      // Optional: You can add an AJAX request here to handle the return action on the server-side
+
+      setTimeout(function() {
+        button.text('Order Returned');
+        form.unbind('submit').submit();  // Submit the form after updating the button text
+      }, 1000);  // Change the button text after 1 second (adjust the delay as needed)
+
+      return false;  // Prevent the form from being submitted
+    });
+  });
+</script>
+  </div>
+</section>
+
+{% endblock body %}
